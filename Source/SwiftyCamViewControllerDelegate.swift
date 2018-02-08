@@ -130,6 +130,8 @@ public protocol SwiftyCamViewControllerDelegate: class {
      */
     
     func swiftyCamNotAuthorized(_ swiftyCam: SwiftyCamViewController)
+    
+    func swiftyCamDidProgressInRecording(_ swiftyCam: SwiftyCamViewController)
 }
 
 public extension SwiftyCamViewControllerDelegate {
@@ -185,6 +187,9 @@ public extension SwiftyCamViewControllerDelegate {
     
     func swiftyCamNotAuthorized(_ swiftyCam: SwiftyCamViewController) {
         // Optional
+    }
+    func swiftyCamDidProgressInRecording(_ swiftyCam: SwiftyCamViewController) {
+        //Optional
     }
 }
 

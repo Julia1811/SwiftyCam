@@ -96,7 +96,15 @@ open class SwiftyCamViewController: UIViewController {
 	/// Maxiumum video duration if SwiftyCamButton is used
 
 	public var maximumVideoDuration : Double     = 0.0
-
+    
+    ///Recorded time for video file
+    
+    public var recordedTime: TimeInterval {
+        get {
+            return self.movieFileOutput?.recordedDuration.seconds ?? 0
+        }
+    }
+    
 	/// Video capture quality
 
 	public var videoQuality : VideoQuality       = .high
@@ -254,13 +262,22 @@ open class SwiftyCamViewController: UIViewController {
     /// Boolean to store when View Controller is notified session is running
 
     fileprivate var sessionRunning               = false
-
+    
+    ///Progress recording timer
+    
+    fileprivate var recordingTimer: Timer?
+    
 	/// Disable view autorotation for forced portrait recorindg
 
 	override open var shouldAutorotate: Bool {
 		return allowAutoRotate
 	}
-
+    
+    deinit {
+        self.recordingTimer?.invalidate()
+        self.recordingTimer = nil
+    }
+    
 	// MARK: ViewDidLoad
 
 	/// ViewDidLoad Implementation
@@ -534,6 +551,15 @@ open class SwiftyCamViewController: UIViewController {
 				movieFileOutput.startRecording(to: URL(fileURLWithPath: outputFilePath), recordingDelegate: self)
 				self.isVideoRecording = true
 				DispatchQueue.main.async {
+                    self.recordingTimer?.invalidate()
+                    self.recordingTimer = Timer.scheduledTimer(
+                        timeInterval: 0.1,
+                        target: self,
+                        selector: #selector(self.updateTimer),
+                        userInfo: nil,
+                        repeats: true
+                    )
+
 					self.cameraDelegate?.swiftyCam(self, didBeginRecordingVideo: self.currentCamera)
 				}
 			}
@@ -542,6 +568,10 @@ open class SwiftyCamViewController: UIViewController {
 			}
 		}
 	}
+    
+    @objc fileprivate func updateTimer() {
+        self.cameraDelegate?.swiftyCamDidProgressInRecording(self)
+    }
 
 	/**
 
@@ -567,6 +597,9 @@ open class SwiftyCamViewController: UIViewController {
 				})
 			}
 			DispatchQueue.main.async {
+                self.recordingTimer?.invalidate()
+                self.recordingTimer = nil
+
 				self.cameraDelegate?.swiftyCam(self, didFinishRecordingVideo: self.currentCamera)
 			}
 		}
